@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserService(private val userRepository: UserRepository) {
+
     fun register(request: RegisterRequest): User {
         if (userRepository.existsByEmail(request.email))
             throw IllegalArgumentException("Email already registered")
@@ -17,4 +18,5 @@ class UserService(private val userRepository: UserRepository) {
         )
         return userRepository.save(user)
     }
+
 }
