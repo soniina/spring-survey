@@ -15,3 +15,12 @@ data class RegisterRequest(
     @field:Size(min = 6)
     val password: String
 )
+
+data class LoginRequest(
+    @field:Email
+    val email: String,
+
+    @field:NotBlank
+    @field:Size(min = 6)
+    val password: String
+)

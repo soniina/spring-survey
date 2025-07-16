@@ -1,7 +1,8 @@
 package learn.spring.survey.controller
 
 import jakarta.validation.Valid
-import learn.spring.survey.model.User
+import learn.spring.survey.dto.AuthResponse
+import learn.spring.survey.dto.LoginRequest
 import learn.spring.survey.dto.RegisterRequest
 import learn.spring.survey.service.UserService
 import org.springframework.http.HttpStatus
@@ -13,7 +14,13 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    fun register(@Valid @RequestBody request: RegisterRequest): User {
+    fun register(@Valid @RequestBody request: RegisterRequest): AuthResponse {
+        println("ALOOOOOO")
         return userService.register(request)
+    }
+
+    @PostMapping("/login")
+    fun login(@Valid @RequestBody request: LoginRequest): AuthResponse {
+        return userService.login(request)
     }
 }

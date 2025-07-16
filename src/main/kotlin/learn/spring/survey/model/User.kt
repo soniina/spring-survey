@@ -27,4 +27,5 @@ class User (
     val role: Role = Role.USER
 ) {
     constructor() : this(0, "", "", "", Role.USER)
+    constructor(username: String, email: String, password: String) : this(0, username, email, password)
 }
