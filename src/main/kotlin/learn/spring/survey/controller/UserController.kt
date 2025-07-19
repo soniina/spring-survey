@@ -15,7 +15,6 @@ class UserController(private val userService: UserService) {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     fun register(@Valid @RequestBody request: RegisterRequest): AuthResponse {
-        println("ALOOOOOO")
         return userService.register(request)
     }
 
