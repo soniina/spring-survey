@@ -1,7 +1,7 @@
 package learn.spring.survey.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import learn.spring.survey.config.SecurityBeansConfig
+import learn.spring.survey.security.SecurityBeansConfig
 import learn.spring.survey.dto.AuthResponse
 import learn.spring.survey.dto.LoginRequest
 import learn.spring.survey.dto.RegisterRequest

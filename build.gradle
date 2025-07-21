@@ -60,6 +60,6 @@ kotlin {
 }
 
 
-tasks.named('test') {
+tasks.test {
     useJUnitPlatform()
 }
