@@ -45,7 +45,6 @@ class UserServiceTest {
         every { passwordEncoder.encode(rawPassword) } returns hashedPassword
         every { jwtService.generateToken(email) } returns token
 
-
         val response = userService.register(
             RegisterRequest(username, email, rawPassword)
         )
