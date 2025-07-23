@@ -19,6 +19,11 @@ class ExceptionHandler {
         return ResponseEntity.badRequest().body(mapOf("errors" to errors))
     }
 
+    @ExceptionHandler(NoSuchElementException::class)
+    fun handleNonExistentElement(ex: NoSuchElementException): ResponseEntity<Map<String, Any>> {
+        return ResponseEntity.badRequest().body(mapOf("error" to (ex.message ?: "Invalid input")))
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleUnknown(ex: Exception): ResponseEntity<Map<String, String>> {
         return ResponseEntity.status(500).body(mapOf("error" to "Internal server error"))

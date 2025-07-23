@@ -1,5 +1,6 @@
 package learn.spring.survey.service
 
+import learn.spring.survey.dto.QuestionResponse
 import learn.spring.survey.dto.SurveyRequest
 import learn.spring.survey.dto.SurveyResponse
 import learn.spring.survey.dto.SurveyResponse.Factory.fromEntity
@@ -24,6 +25,15 @@ class SurveyService (private val surveyRepository: SurveyRepository) {
         survey.questions.addAll(questions)
 
         return fromEntity(surveyRepository.save(survey))
+    }
+
+    fun getSurveyQuestions(surveyId: Long): List<QuestionResponse> {
+        val survey = surveyRepository.findById(surveyId)
+            .orElseThrow { NoSuchElementException("Survey with id=$surveyId not found") }
+
+        return survey.questions.map { question ->
+            QuestionResponse(id = question.id, text = question.text)
+        }
     }
 
 }

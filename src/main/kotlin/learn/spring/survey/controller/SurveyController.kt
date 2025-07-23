@@ -1,6 +1,7 @@
 package learn.spring.survey.controller
 
 import jakarta.validation.Valid
+import learn.spring.survey.dto.QuestionResponse
 import learn.spring.survey.dto.SurveyRequest
 import learn.spring.survey.dto.SurveyResponse
 import learn.spring.survey.security.UserPrincipal
@@ -17,5 +18,10 @@ class SurveyController (private val surveyService: SurveyService) {
     @ResponseStatus(HttpStatus.CREATED)
     fun createSurvey(@RequestBody @Valid request: SurveyRequest, @AuthenticationPrincipal principal: UserPrincipal): SurveyResponse {
         return surveyService.createSurvey(request, principal.getUser())
+    }
+
+    @GetMapping("/{surveyId}")
+    fun getSurveyQuestions(@PathVariable surveyId: Long): List<QuestionResponse> {
+        return surveyService.getSurveyQuestions(surveyId)
     }
 }
