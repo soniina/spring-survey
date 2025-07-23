@@ -14,13 +14,6 @@ java {
     }
 }
 
-//
-//configurations {
-//    testImplementation {
-//        exclude("org.apache.tomcat.embed" to "tomcat-embed-websocket")
-//    }
-//}
-
 repositories {
     mavenCentral()
 }
@@ -44,6 +37,7 @@ dependencies {
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
     }
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework:spring-webflux")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
