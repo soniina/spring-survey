@@ -23,7 +23,7 @@ class SurveyController (private val surveyService: SurveyService) {
         return surveyService.getSurveyQuestions(surveyId)
     }
 
-    @PostMapping("/{surveyId}/answers")
+    @PostMapping("/{surveyId}/submit")
     @ResponseStatus(HttpStatus.CREATED)
     fun submitAnswers(@PathVariable surveyId: Long, @RequestBody @Valid request: AnswerRequest,
                       @AuthenticationPrincipal principal: UserPrincipal): List<AnswerResponse> {
