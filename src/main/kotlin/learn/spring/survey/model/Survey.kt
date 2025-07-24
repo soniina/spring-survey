@@ -13,7 +13,7 @@ data class Survey (
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    val author: User = User(),
+    val author: User? = null,
 
     @OneToMany(mappedBy = "survey", cascade = [CascadeType.ALL], orphanRemoval = true)
     val questions: MutableList<Question> = mutableListOf()

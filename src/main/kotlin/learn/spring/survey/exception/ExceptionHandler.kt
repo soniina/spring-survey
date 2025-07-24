@@ -25,6 +25,11 @@ class ExceptionHandler {
         return ResponseEntity.status(404).body(mapOf("error" to (ex.message ?: "Element not found")))
     }
 
+    @ExceptionHandler(ConflictException::class)
+    fun handleConflict(ex: ConflictException): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.status(409).body(mapOf("error" to (ex.message ?: "Conflict")))
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleUnknown(ex: Exception): ResponseEntity<Map<String, String>> {
         return ResponseEntity.status(500).body(mapOf("error" to "Internal server error"))

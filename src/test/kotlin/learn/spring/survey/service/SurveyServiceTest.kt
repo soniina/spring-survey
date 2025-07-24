@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 @ExtendWith(MockKExtension::class)
 class SurveyServiceTest {
@@ -48,7 +49,8 @@ class SurveyServiceTest {
 
         val savedSurvey = savedSurveySlot.captured
         assertEquals(title, savedSurvey.title)
-        assertEquals(author.email, savedSurvey.author.email)
+        assertNotNull(savedSurvey.author)
+        assertEquals(author.email, savedSurvey.author!!.email)
         assertEquals(questions, savedSurvey.questions.map { it.text })
     }
 
