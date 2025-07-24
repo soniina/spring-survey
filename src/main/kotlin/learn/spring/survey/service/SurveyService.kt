@@ -15,7 +15,7 @@ class SurveyService (private val surveyRepository: SurveyRepository) {
 
     fun createSurvey(request: SurveyRequest, author: User): SurveyResponse {
         if (surveyRepository.existsByTitle(request.title))
-            throw IllegalArgumentException("Survey with the same title already registered")
+            throw IllegalArgumentException("Survey with this title already exists")
 
         val survey = Survey(title = request.title, author = author)
 

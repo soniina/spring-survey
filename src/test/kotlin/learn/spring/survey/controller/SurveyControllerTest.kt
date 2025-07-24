@@ -80,7 +80,7 @@ import kotlin.test.assertEquals
 
     @Test
     fun `should not create survey if title already exists`() {
-        Mockito.`when`(surveyService.createSurvey(surveyRequest, author)).thenThrow(IllegalArgumentException("Survey with the same title already registered"))
+        Mockito.`when`(surveyService.createSurvey(surveyRequest, author)).thenThrow(IllegalArgumentException("Survey with this title already exists"))
 
         val authentication = UsernamePasswordAuthenticationToken(UserPrincipal(author), null, emptyList())
         SecurityContextHolder.getContext().authentication = authentication
@@ -90,7 +90,7 @@ import kotlin.test.assertEquals
             content = objectMapper.writeValueAsString(surveyRequest)
         }.andExpect {
             status { isBadRequest() }
-            jsonPath("$.error") { value("Survey with the same title already registered") }
+            jsonPath("$.error") { value("Survey with this title already exists") }
         }
     }
 }
