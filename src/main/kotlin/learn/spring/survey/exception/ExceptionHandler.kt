@@ -1,5 +1,6 @@
 package learn.spring.survey.exception
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -19,9 +20,9 @@ class ExceptionHandler {
         return ResponseEntity.badRequest().body(mapOf("errors" to errors))
     }
 
-    @ExceptionHandler(NoSuchElementException::class)
-    fun handleNonExistentElement(ex: NoSuchElementException): ResponseEntity<Map<String, Any>> {
-        return ResponseEntity.badRequest().body(mapOf("error" to (ex.message ?: "Invalid input")))
+    @ExceptionHandler(EntityNotFoundException::class)
+    fun handleNoSuchElement(ex: EntityNotFoundException): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.status(404).body(mapOf("error" to (ex.message ?: "Element not found")))
     }
 
     @ExceptionHandler(Exception::class)

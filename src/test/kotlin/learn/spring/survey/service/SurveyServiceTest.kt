@@ -6,6 +6,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
+import jakarta.persistence.EntityNotFoundException
 import learn.spring.survey.dto.SurveyRequest
 import learn.spring.survey.model.Question
 import learn.spring.survey.model.Survey
@@ -14,7 +15,6 @@ import learn.spring.survey.repository.SurveyRepository
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
-import kotlin.NoSuchElementException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -83,7 +83,7 @@ class SurveyServiceTest {
         val surveyId = 1L
         every { surveyRepository.findById(surveyId) } returns Optional.empty()
 
-        val ex = assertFailsWith<NoSuchElementException> {
+        val ex = assertFailsWith<EntityNotFoundException> {
             surveyService.getSurveyQuestions(surveyId)
         }
 

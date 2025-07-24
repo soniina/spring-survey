@@ -9,6 +9,7 @@ import learn.spring.survey.model.Survey
 import learn.spring.survey.model.User
 import learn.spring.survey.repository.SurveyRepository
 import org.springframework.stereotype.Service
+import jakarta.persistence.EntityNotFoundException
 
 @Service
 class SurveyService (private val surveyRepository: SurveyRepository) {
@@ -29,7 +30,7 @@ class SurveyService (private val surveyRepository: SurveyRepository) {
 
     fun getSurveyQuestions(surveyId: Long): List<QuestionResponse> {
         val survey = surveyRepository.findById(surveyId)
-            .orElseThrow { NoSuchElementException("Survey with id=$surveyId not found") }
+            .orElseThrow { EntityNotFoundException("Survey with id=$surveyId not found") }
 
         return survey.questions.map { question ->
             QuestionResponse(id = question.id, text = question.text)

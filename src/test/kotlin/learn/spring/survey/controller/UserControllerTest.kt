@@ -8,9 +8,11 @@ import learn.spring.survey.dto.RegisterRequest
 import learn.spring.survey.service.UserService
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
@@ -19,7 +21,8 @@ import kotlin.test.assertEquals
 
 
 @WebMvcTest(UserController::class)
-@Import(SecurityBeansConfig::class)
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 class UserControllerTest {
 
     @Autowired
@@ -37,7 +40,7 @@ class UserControllerTest {
     private val authResponse = AuthResponse("jwt-token")
 
     @Test
-    fun `should register user successfully`() {
+    fun `should return 201 with token when valid register request`() {
         Mockito.`when`(userService.register(registerRequest)).thenReturn(authResponse)
 
         val result = mockMvc.post("/auth/register") {
@@ -56,7 +59,7 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should not register invalid request`() {
+    fun `should return 400 when register request in invalid`() {
         val invalidRequest = RegisterRequest("", "email", "pass")
 
         mockMvc.post("/auth/register") {
@@ -71,7 +74,7 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should not register if email already exists`() {
+    fun `should return 400 when email already exists`() {
         Mockito.`when`(userService.register(registerRequest)).thenThrow(IllegalArgumentException("Email already registered"))
 
         mockMvc.post("/auth/register") {
@@ -84,7 +87,7 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should login user successfully`() {
+    fun `should return 201 with token when valid login request`() {
         Mockito.`when`(userService.login(loginRequest)).thenReturn(authResponse)
 
         val result = mockMvc.post("/auth/login") {
@@ -103,7 +106,7 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should not login invalid request`() {
+    fun `should return 400 when login request in invalid`() {
         val invalidRequest = LoginRequest("email", "")
 
         mockMvc.post("/auth/login") {
