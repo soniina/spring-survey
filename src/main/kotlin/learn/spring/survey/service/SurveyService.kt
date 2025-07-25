@@ -1,8 +1,5 @@
 package learn.spring.survey.service
 
-import learn.spring.survey.dto.QuestionResponse
-import learn.spring.survey.dto.SurveyRequest
-import learn.spring.survey.dto.SurveyResponse
 import learn.spring.survey.dto.SurveyResponse.Factory.fromEntity
 import learn.spring.survey.model.Question
 import learn.spring.survey.model.Survey
@@ -11,7 +8,7 @@ import learn.spring.survey.repository.SurveyRepository
 import org.springframework.stereotype.Service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
-import learn.spring.survey.dto.AnswerResponse
+import learn.spring.survey.dto.*
 import learn.spring.survey.exception.ConflictException
 import learn.spring.survey.model.Answer
 import learn.spring.survey.repository.AnswerRepository
@@ -44,11 +41,11 @@ class SurveyService (private val surveyRepository: SurveyRepository, private val
     }
 
     @Transactional
-    fun submitAnswers(surveyId: Long, answers: List<String>, user: User): List<AnswerResponse> {
+    fun submitAnswers(surveyId: Long, request: AnswerRequest, user: User): List<AnswerResponse> {
         val survey = surveyRepository.findById(surveyId)
             .orElseThrow { EntityNotFoundException("Survey with id=$surveyId not found") }
 
-        if (answers.size != survey.questions.size) {
+        if (request.answers.size != survey.questions.size) {
             throw IllegalArgumentException("Number of answers must match number of questions")
         }
 
@@ -56,7 +53,7 @@ class SurveyService (private val surveyRepository: SurveyRepository, private val
             throw ConflictException("User already submitted answers for this survey")
         }
 
-        val answerEntities = survey.questions.zip(answers).map { (question, text) ->
+        val answerEntities = survey.questions.zip(request.answers).map { (question, text) ->
             Answer(text = text, question = question, respondent = user)
         }
 

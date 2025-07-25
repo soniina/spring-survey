@@ -7,6 +7,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
 import jakarta.persistence.EntityNotFoundException
+import learn.spring.survey.dto.AnswerRequest
 import learn.spring.survey.dto.SurveyRequest
 import learn.spring.survey.exception.ConflictException
 import learn.spring.survey.model.Answer
@@ -120,7 +121,7 @@ class SurveyServiceTest {
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(respondent.id, surveyId) } returns false
         every { answerRepository.saveAll(any<List<Answer>>()) } answers { firstArg<List<Answer>>() }
 
-        val result = surveyService.submitAnswers(surveyId, answers, respondent)
+        val result = surveyService.submitAnswers(surveyId, AnswerRequest(answers), respondent)
 
         assertEquals(answers.size, result.size)
         assertEquals(answers, result.map { it.text })
@@ -142,32 +143,32 @@ class SurveyServiceTest {
         every { surveyRepository.findById(surveyId) } returns Optional.empty()
 
         val ex = assertFailsWith<EntityNotFoundException> {
-            surveyService.submitAnswers(surveyId, answers, respondent)
+            surveyService.submitAnswers(surveyId, AnswerRequest(answers), respondent)
         }
 
         assertEquals("Survey with id=$surveyId not found", ex.message)
     }
 
     @Test
-    fun `should not submit answers when number of asnwers does not match the number of questions`() {
+    fun `should not submit answers when number of answers does not match the number of questions`() {
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
 
-        val answers = listOf(answer1.text, answer2.text, "excess answer")
+        val mismatchedAnswers = listOf(answer1.text, answer2.text, "excess answer")
 
         val ex = assertFailsWith<IllegalArgumentException> {
-            surveyService.submitAnswers(surveyId, answers, respondent)
+            surveyService.submitAnswers(surveyId, AnswerRequest(mismatchedAnswers), respondent)
         }
 
         assertEquals("Number of answers must match number of questions", ex.message)
     }
 
     @Test
-    fun `should not submit answers when user already submitted answers for this survey`() {
+    fun `should not submit answers when user already submitted answers`() {
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(respondent.id, surveyId) } returns true
 
         val ex = assertFailsWith<ConflictException> {
-            surveyService.submitAnswers(surveyId, answers, respondent)
+            surveyService.submitAnswers(surveyId, AnswerRequest(answers), respondent)
         }
 
         assertEquals("User already submitted answers for this survey", ex.message)

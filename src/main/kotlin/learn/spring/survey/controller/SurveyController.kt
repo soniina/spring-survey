@@ -27,6 +27,6 @@ class SurveyController (private val surveyService: SurveyService) {
     @ResponseStatus(HttpStatus.CREATED)
     fun submitAnswers(@PathVariable surveyId: Long, @RequestBody @Valid request: AnswerRequest,
                       @AuthenticationPrincipal principal: UserPrincipal): List<AnswerResponse> {
-        return surveyService.submitAnswers(surveyId, request.answers, principal.getUser())
+        return surveyService.submitAnswers(surveyId, request, principal.getUser())
     }
 }
