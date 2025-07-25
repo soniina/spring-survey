@@ -32,7 +32,7 @@ class UserServiceTest {
     lateinit var userService: UserService
 
     @Test
-    fun `should register new user`() {
+    fun `should register new user successfully`() {
 
         val username = "alice"
         val email = "test@example.com"

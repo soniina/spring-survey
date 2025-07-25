@@ -57,7 +57,7 @@ class SurveyService (private val surveyRepository: SurveyRepository, private val
         }
 
         val answerEntities = survey.questions.zip(answers).map { (question, text) ->
-            Answer(text = text, question = question, respondent = user) //userRepository.getReferenceById()??
+            Answer(text = text, question = question, respondent = user)
         }
 
         return answerRepository.saveAll(answerEntities)
