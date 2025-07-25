@@ -3,18 +3,15 @@ package learn.spring.survey.integration
 import learn.spring.survey.dto.AuthResponse
 import learn.spring.survey.dto.LoginRequest
 import learn.spring.survey.dto.RegisterRequest
-import learn.spring.survey.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.web.reactive.server.WebTestClient
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-
-@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AuthIntegrationTest {
 
@@ -22,11 +19,13 @@ class AuthIntegrationTest {
     private lateinit var webTestClient: WebTestClient
 
     @Autowired
-    private lateinit var userRepository: UserRepository
+    private lateinit var jdbcTemplate: JdbcTemplate
 
     @BeforeTest
     fun clean() {
-        userRepository.deleteAll()
+        jdbcTemplate.execute("DELETE FROM questions")
+        jdbcTemplate.execute("DELETE FROM surveys")
+        jdbcTemplate.execute("DELETE FROM users")
     }
 
     @Test
