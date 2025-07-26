@@ -2,6 +2,12 @@ package learn.spring.survey.model
 
 import jakarta.persistence.*
 
+enum class QuestionType {
+    SINGLE_CHOICE,
+    MULTIPLE_CHOICE,
+    TEXT
+}
+
 @Entity
 @Table(name = "questions")
 data class Question(
@@ -9,6 +15,8 @@ data class Question(
     val id: Long = 0,
 
     val text: String = "",
+
+    val type: QuestionType = QuestionType.TEXT,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "survey_id")

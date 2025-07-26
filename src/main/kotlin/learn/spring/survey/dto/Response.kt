@@ -1,6 +1,7 @@
 package learn.spring.survey.dto
 
 import learn.spring.survey.model.Answer
+import learn.spring.survey.model.QuestionType
 import learn.spring.survey.model.Survey
 
 data class AuthResponse(val token: String)
@@ -18,7 +19,7 @@ data class SurveyResponse(
                 title = survey.title,
                 authorId = survey.author?.id ?: 0L,
                 questions = survey.questions.map {
-                    QuestionResponse(it.id, it.text)
+                    QuestionResponse(it.id, it.text, it.type)
                 }
             )
         }
@@ -27,7 +28,8 @@ data class SurveyResponse(
 
 data class QuestionResponse(
     val id: Long,
-    val text: String
+    val text: String,
+    val type: QuestionType
 )
 
 data class AnswerResponse(

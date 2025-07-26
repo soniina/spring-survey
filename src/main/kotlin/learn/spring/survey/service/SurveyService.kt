@@ -23,8 +23,8 @@ class SurveyService (private val surveyRepository: SurveyRepository, private val
 
         val survey = Survey(title = request.title, author = author)
 
-        val questions = request.questions.map { text ->
-            Question(text = text, survey = survey)
+        val questions = request.questions.map { questionRequest ->
+            Question(text = questionRequest.text, type = questionRequest.type, survey = survey)
         }
         survey.questions.addAll(questions)
 
@@ -36,7 +36,7 @@ class SurveyService (private val surveyRepository: SurveyRepository, private val
             .orElseThrow { EntityNotFoundException("Survey with id=$surveyId not found") }
 
         return survey.questions.map { question ->
-            QuestionResponse(id = question.id, text = question.text)
+            QuestionResponse(id = question.id, text = question.text, type = question.type)
         }
     }
 

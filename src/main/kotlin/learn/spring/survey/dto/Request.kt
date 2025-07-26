@@ -1,6 +1,7 @@
 package learn.spring.survey.dto
 
 import jakarta.validation.constraints.*
+import learn.spring.survey.model.QuestionType
 
 data class RegisterRequest(
     @field:NotBlank
@@ -28,7 +29,14 @@ data class SurveyRequest(
     val title: String,
 
     @field:NotEmpty
-    val questions: List<@NotBlank String>
+    val questions: List<@NotBlank QuestionRequest>
+)
+
+data class QuestionRequest(
+    @field:NotBlank
+    val text: String,
+
+    val type: QuestionType = QuestionType.TEXT
 )
 
 data class AnswerRequest(
