@@ -1,5 +1,8 @@
 package learn.spring.survey.security
 
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.security.SignatureException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -21,19 +24,35 @@ class JwtAuthFilter(private val jwtService: JwtService, private val userReposito
         if (!authHeader.startsWith("Bearer ")) return filterChain.doFilter(request, response)
 
         val token = authHeader.substringAfter("Bearer ")
-        val email = jwtService.extractEmail(token)
 
-        if (email != null && SecurityContextHolder.getContext().authentication == null) {
-            val user = userRepository.findByEmail(email)
+        try {
+            val email = jwtService.extractEmail(token)
 
-            if (user != null && jwtService.isTokenValid(token, user)) {
-                val userPrincipal = UserPrincipal(user)
-                val auth = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
-                auth.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = auth
+            if (SecurityContextHolder.getContext().authentication == null) {
+                val user = userRepository.findByEmail(email)
+
+                if (user != null && jwtService.isTokenValid(token, user)) {
+                    val userPrincipal = UserPrincipal(user)
+                    val auth = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
+                    auth.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    SecurityContextHolder.getContext().authentication = auth
+                }
             }
+            filterChain.doFilter(request, response)
+
+        } catch (e: Exception) {
+            response.status = HttpServletResponse.SC_UNAUTHORIZED
+            response.contentType = "application/json"
+
+            val message = when (e) {
+                is ExpiredJwtException -> "JWT token expired"
+                is SignatureException -> "JWT signature invalid"
+                is MalformedJwtException -> "JWT token malformed"
+                else -> "Invalid token: ${e.message}"
+            }
+
+            response.writer.write("""{"error": "$message"}""")
         }
 
-        filterChain.doFilter(request, response)
     }
 }
