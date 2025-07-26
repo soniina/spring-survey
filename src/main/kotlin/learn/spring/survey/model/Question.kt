@@ -18,6 +18,9 @@ data class Question(
 
     val type: QuestionType = QuestionType.TEXT,
 
+    @OneToMany(mappedBy = "question", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val options: MutableList<AnswerOption> = mutableListOf(),
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "survey_id")
     val survey: Survey? = null

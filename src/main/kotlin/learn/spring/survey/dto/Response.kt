@@ -13,39 +13,44 @@ data class SurveyResponse(
     val questions: List<QuestionResponse>
 ) {
     companion object Factory {
-        fun fromEntity(survey: Survey): SurveyResponse {
-            return SurveyResponse(
+        fun fromEntity(survey: Survey) =
+            SurveyResponse(
                 id = survey.id,
                 title = survey.title,
                 authorId = survey.author?.id ?: 0L,
-                questions = survey.questions.map {
-                    QuestionResponse(it.id, it.text, it.type)
+                questions = survey.questions.map { question ->
+                    QuestionResponse(question.id, question.text, question.type, question.options?.map {
+                        OptionResponse(it.id, it.text)})
                 }
             )
-        }
     }
 }
 
 data class QuestionResponse(
     val id: Long,
     val text: String,
-    val type: QuestionType
+    val type: QuestionType,
+    val options: List<OptionResponse>? = null
+)
+
+data class OptionResponse(
+    val id: Long,
+    val text: String
 )
 
 data class AnswerResponse(
     val id: Long,
-    val text: String,
-    val questionId: Long,
-    val surveyId: Long
+    val text: String? = null,
+    val optionIds: List<Long>? = null,
+    val questionId: Long
 ) {
     companion object Factory {
-        fun fromEntity(answer: Answer): AnswerResponse {
-            return AnswerResponse(
+        fun fromEntity(answer: Answer) =
+            AnswerResponse(
                 id = answer.id,
                 text = answer.text,
-                questionId = answer.question?.id ?: 0L,
-                surveyId = answer.question?.id ?: 0L
+                optionIds = answer.selectedOptions?.map { it.option?.id ?: 0L },
+                questionId = answer.question?.id ?: 0L
             )
-        }
     }
 }

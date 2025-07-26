@@ -1,5 +1,9 @@
 package learn.spring.survey.dto
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import jakarta.validation.Valid
 import jakarta.validation.constraints.*
 import learn.spring.survey.model.QuestionType
 
@@ -28,7 +32,8 @@ data class SurveyRequest(
     @field:NotBlank
     val title: String,
 
-    @field:NotEmpty
+    @field:Size(min = 1)
+    @field:Valid
     val questions: List<@NotBlank QuestionRequest>
 )
 
@@ -36,10 +41,37 @@ data class QuestionRequest(
     @field:NotBlank
     val text: String,
 
-    val type: QuestionType = QuestionType.TEXT
-)
+    val type: QuestionType = QuestionType.TEXT,
+
+    val options: List<String>? = null
+) {
+    @get:AssertTrue(message = "Options must be present for choice-based questions and absent for text questions")
+    val isValidOptions: Boolean
+        get() = when (type) {
+            QuestionType.TEXT -> options.isNullOrEmpty()
+            QuestionType.SINGLE_CHOICE, QuestionType.MULTIPLE_CHOICE -> !options.isNullOrEmpty() && options.distinct().size == options.size
+        }
+}
 
 data class AnswerRequest(
     @field:NotEmpty
-    val answers: List<@NotBlank String>
+    val answers: List<AnswerSubmission>
 )
+
+//@JsonTypeInfo(
+//    use = JsonTypeInfo.Id.NAME,
+//    include = JsonTypeInfo.As.PROPERTY,
+//    property = "type"
+//)
+//@JsonSubTypes(
+//    JsonSubTypes.Type(value = AnswerSubmission.TextAnswer::class, name = "TEXT"),
+//    JsonSubTypes.Type(value = AnswerSubmission.SingleChoiceAnswer::class, name = "SINGLE_CHOICE"),
+//    JsonSubTypes.Type(value = AnswerSubmission.MultipleChoiceAnswer::class, name = "MULTIPLE_CHOICE")
+//)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+sealed class AnswerSubmission {
+    data class TextAnswer(val text: String) : AnswerSubmission()
+    data class SingleChoiceAnswer(val optionId: Long) : AnswerSubmission()
+    data class MultipleChoiceAnswer(val optionIds: List<Long>) : AnswerSubmission()
+}

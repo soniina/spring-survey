@@ -8,12 +8,10 @@ import io.mockk.slot
 import io.mockk.verify
 import jakarta.persistence.EntityNotFoundException
 import learn.spring.survey.dto.AnswerRequest
+import learn.spring.survey.dto.QuestionRequest
 import learn.spring.survey.dto.SurveyRequest
 import learn.spring.survey.exception.ConflictException
-import learn.spring.survey.model.Answer
-import learn.spring.survey.model.Question
-import learn.spring.survey.model.Survey
-import learn.spring.survey.model.User
+import learn.spring.survey.model.*
 import learn.spring.survey.repository.AnswerRepository
 import learn.spring.survey.repository.SurveyRepository
 import org.junit.jupiter.api.Test

@@ -8,8 +8,7 @@ data class Answer(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(nullable = false)
-    val text: String = "",
+    val text: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
@@ -17,5 +16,8 @@ data class Answer(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    val respondent: User? = null
+    val respondent: User? = null,
+
+    @OneToMany(mappedBy = "answer", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val selectedOptions: MutableList<SelectedOption> = mutableListOf()
 )
