@@ -2,6 +2,7 @@ package learn.spring.survey.exception
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.ResponseEntity
+import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -28,6 +29,11 @@ class ExceptionHandler {
     @ExceptionHandler(ConflictException::class)
     fun handleConflict(ex: ConflictException): ResponseEntity<Map<String, String>> {
         return ResponseEntity.status(409).body(mapOf("error" to (ex.message ?: "Conflict")))
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
+    fun handleNotSupportedType(ex: HttpMediaTypeNotSupportedException): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.badRequest().body(mapOf("error" to (ex.message ?: "Content-Type is not supported")))
     }
 
     @ExceptionHandler(Exception::class)
