@@ -23,7 +23,7 @@ class SurveyService(
         if (surveyRepository.existsByTitle(request.title))
             throw IllegalArgumentException("Survey with this title already exists")
 
-        val survey = Survey(title = request.title, author = author)
+        val survey = Survey(title = request.title, author = author, type = request.type)
 
         val questions = request.questions.map { questionRequest ->
             Question(
@@ -32,8 +32,8 @@ class SurveyService(
                 survey = survey
             ).apply {
                 if (questionRequest.type != QuestionType.TEXT) {
-                    questionRequest.options?.forEach { optionText ->
-                        options.add(AnswerOption(text = optionText, question = this))
+                    questionRequest.options?.forEach { optionRequest ->
+                        options.add(AnswerOption(text = optionRequest.text, isCorrect = optionRequest.isCorrect ?: false, points = optionRequest.points ?: 0, question = this))
                     }
                 }
             }
@@ -57,7 +57,7 @@ class SurveyService(
     }
 
     @Transactional
-    fun submitAnswers(surveyId: Long, request: AnswerRequest, user: User): List<AnswerResponse> {
+    fun submitAnswers(surveyId: Long, request: AnswerRequest, user: User): SubmissionResponse {
         val survey = surveyRepository.findById(surveyId)
             .orElseThrow { EntityNotFoundException("Survey with id=$surveyId not found") }
 
@@ -110,7 +110,54 @@ class SurveyService(
             answers.add(answer)
         }
 
-        return answerRepository.saveAll(answers).map { AnswerResponse.fromEntity(it) }
+        return calculateSubmissionResult(survey, answerRepository.saveAll(answers))
+    }
+
+
+    private fun calculateSubmissionResult(survey: Survey, answers: List<Answer>): SubmissionResponse {
+        var totalScore = 0
+        val correctAnswers = mutableMapOf<Long, Boolean>()
+
+        answers.forEach { answer ->
+            answer.question?.let { question ->
+                when (survey.type) {
+                    SurveyType.SCORED -> {
+                        totalScore += answer.selectedOptions.sumOf { it.option?.points ?: 0 }
+                    }
+
+                    SurveyType.QUIZ -> when (question.type) {
+                        QuestionType.SINGLE_CHOICE -> {
+                            val isCorrect = answer.selectedOptions.singleOrNull()?.option?.isCorrect == true
+
+                            correctAnswers[question.id] = isCorrect
+                            if (isCorrect) totalScore += answer.selectedOptions.sumOf { it.option?.points ?: 0 }
+                        }
+
+                        QuestionType.MULTIPLE_CHOICE -> {
+                            val correctOptionIds = question.options.filter { it.isCorrect }.map { it.id }.toSet()
+
+                            val selectedOptionIds = answer.selectedOptions.mapNotNull { it.option?.id }.toSet()
+
+                            val isCorrect = selectedOptionIds == correctOptionIds
+                            correctAnswers[question.id] = isCorrect
+                            if (isCorrect) totalScore += correctOptionIds.sumOf { id ->
+                                question.options.find { it.id == id }?.points ?: 0
+                            }
+                        }
+
+                        else -> {}
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+        return SubmissionResponse(
+            answers = answers.map { AnswerResponse.fromEntity(it) },
+            totalScore = if (survey.type != SurveyType.STANDARD) totalScore else null,
+            correctAnswers = if (survey.type == SurveyType.QUIZ) correctAnswers else null
+        )
     }
 
 }

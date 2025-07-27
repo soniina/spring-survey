@@ -9,6 +9,10 @@ data class AnswerOption(
 
     val text: String = "",
 
+    val isCorrect: Boolean = false,
+
+    val points: Int = 0,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     val question: Question? = null

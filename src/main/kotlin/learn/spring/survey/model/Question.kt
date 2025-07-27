@@ -16,6 +16,7 @@ data class Question(
 
     val text: String = "",
 
+    @Enumerated(EnumType.STRING)
     val type: QuestionType = QuestionType.TEXT,
 
     @OneToMany(mappedBy = "question", cascade = [CascadeType.ALL], orphanRemoval = true)

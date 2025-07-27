@@ -25,6 +25,7 @@ class JwtAuthFilter(private val jwtService: JwtService, private val userReposito
 
         val token = authHeader.substringAfter("Bearer ")
 
+        // todo fixxxxxxxxxx throw if email == null
         try {
             val email = jwtService.extractEmail(token)
 

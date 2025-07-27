@@ -38,6 +38,12 @@ data class OptionResponse(
     val text: String
 )
 
+data class SubmissionResponse(
+    val answers: List<AnswerResponse>,
+    val totalScore: Int? = null,
+    val correctAnswers: Map<Long, Boolean>? = null
+)
+
 data class AnswerResponse(
     val id: Long,
     val text: String? = null,
