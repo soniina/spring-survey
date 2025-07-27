@@ -25,19 +25,19 @@ class JwtAuthFilter(private val jwtService: JwtService, private val userReposito
 
         val token = authHeader.substringAfter("Bearer ")
 
-        // todo fixxxxxxxxxx throw if email == null
         try {
             val email = jwtService.extractEmail(token)
+            val user = userRepository.findByEmail(email) ?: throw UserNotFoundException()
+
+            if (!jwtService.isTokenValid(token, user)) {
+                throw InvalidTokenException()
+            }
 
             if (SecurityContextHolder.getContext().authentication == null) {
-                val user = userRepository.findByEmail(email)
-
-                if (user != null && jwtService.isTokenValid(token, user)) {
-                    val userPrincipal = UserPrincipal(user)
-                    val auth = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
-                    auth.details = WebAuthenticationDetailsSource().buildDetails(request)
-                    SecurityContextHolder.getContext().authentication = auth
-                }
+                val userPrincipal = UserPrincipal(user)
+                val auth = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
+                    .apply { details = WebAuthenticationDetailsSource().buildDetails(request) }
+                SecurityContextHolder.getContext().authentication = auth
             }
             filterChain.doFilter(request, response)
 
@@ -45,15 +45,20 @@ class JwtAuthFilter(private val jwtService: JwtService, private val userReposito
             response.status = HttpServletResponse.SC_UNAUTHORIZED
             response.contentType = "application/json"
 
-            val message = when (e) {
+            val message = "Authentication failed: ${when (e) {
                 is ExpiredJwtException -> "JWT token expired"
                 is SignatureException -> "JWT signature invalid"
                 is MalformedJwtException -> "JWT token malformed"
-                else -> "Invalid token: ${e.message}"
-            }
+                is UserNotFoundException -> "User not found"
+                is InvalidTokenException -> "Invalid token"
+                else -> e.message
+            }}"
 
             response.writer.write("""{"error": "$message"}""")
         }
 
     }
 }
+
+class UserNotFoundException : RuntimeException()
+class InvalidTokenException : RuntimeException()

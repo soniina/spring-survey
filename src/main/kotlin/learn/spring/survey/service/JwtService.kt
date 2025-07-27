@@ -1,10 +1,13 @@
 package learn.spring.survey.service
 
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.Keys
 import learn.spring.survey.config.JwtProperties
 import learn.spring.survey.model.User
 import org.springframework.stereotype.Service
+import java.security.SignatureException
 import java.util.*
 
 @Service
@@ -30,14 +33,24 @@ class JwtService(private val properties: JwtProperties) {
         .parseClaimsJws(token)
         .body
 
-    fun extractEmail(token: String): String = parseToken(token).subject
+    fun extractEmail(token: String): String {
+        return try {
+            parseToken(token).subject
+        } catch (e: Exception) {
+            throw when (e) {
+                is ExpiredJwtException -> e
+                is SignatureException -> e
+                else -> MalformedJwtException("Invalid token", e)
+            }
+        }
+    }
 
     fun isTokenValid(token: String, user: User): Boolean {
-        return try {
-            val claims = parseToken(token)
-            claims.expiration.after(Date()) && claims.subject == user.email
+        val claims = try {
+            parseToken(token)
         } catch (e: Exception) {
-            false
+            return false
         }
+        return claims.subject == user.email
     }
 }
