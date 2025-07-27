@@ -1,5 +1,8 @@
 package learn.spring.survey.service
 
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.security.SignatureException
 import io.mockk.junit5.MockKExtension
 import learn.spring.survey.config.JwtProperties
 import learn.spring.survey.model.User
@@ -43,7 +46,7 @@ class JwtServiceTest {
     }
 
     @Test
-    fun `should return false for expired token`() {
+    fun `should throw ExpiredJwtException for expired token`() {
         val expiredProperties = JwtProperties().apply {
             secret = "my-very-secure-secret-key-with-min-256-bits-length"
             expiration = 0
@@ -51,13 +54,28 @@ class JwtServiceTest {
         val expiredJwtService = JwtService(expiredProperties)
 
         val token = expiredJwtService.generateToken(user.email)
+
+        assertFailsWith<ExpiredJwtException> { jwtService.extractEmail(token) }
         assertFalse(jwtService.isTokenValid(token, user))
     }
 
     @Test
-    fun `should throw when extracting from invalid token`() {
+    fun `should throw MalformedJwtException for invalid token structure`() {
         val invalidToken = "invalid.token.string"
-        assertFailsWith<Exception> { jwtService.extractEmail(invalidToken) }
+
+        assertFailsWith<MalformedJwtException> { jwtService.extractEmail(invalidToken) }
+        assertFalse(jwtService.isTokenValid(invalidToken, user))
     }
 
+    @Test
+    fun `should throw SignatureException for token with invalid signature`() {
+        val hackerProperties = JwtProperties().apply {
+            secret = "different-secret-key-with-min-256-bits-length-xyz"
+            expiration = 3600000
+        }
+        val token = JwtService(hackerProperties).generateToken(user.email)
+
+        assertFailsWith<SignatureException> { jwtService.extractEmail(token) }
+        assertFalse(jwtService.isTokenValid(token, user))
+    }
 }

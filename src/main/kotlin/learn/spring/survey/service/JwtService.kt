@@ -4,10 +4,10 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.security.SignatureException
 import learn.spring.survey.config.JwtProperties
 import learn.spring.survey.model.User
 import org.springframework.stereotype.Service
-import java.security.SignatureException
 import java.util.*
 
 @Service
