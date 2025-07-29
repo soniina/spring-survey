@@ -130,7 +130,7 @@ class SurveyService(
                             val isCorrect = answer.selectedOptions.singleOrNull()?.option?.isCorrect == true
 
                             correctAnswers[question.id] = isCorrect
-                            if (isCorrect) totalScore += answer.selectedOptions.sumOf { it.option?.points ?: 0 }
+                            if (isCorrect) totalScore ++
                         }
 
                         QuestionType.MULTIPLE_CHOICE -> {
@@ -140,9 +140,7 @@ class SurveyService(
 
                             val isCorrect = selectedOptionIds == correctOptionIds
                             correctAnswers[question.id] = isCorrect
-                            if (isCorrect) totalScore += correctOptionIds.sumOf { id ->
-                                question.options.find { it.id == id }?.points ?: 0
-                            }
+                            if (isCorrect) totalScore ++
                         }
 
                         else -> {}

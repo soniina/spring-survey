@@ -3,11 +3,13 @@ package learn.spring.survey.dto
 import learn.spring.survey.model.Answer
 import learn.spring.survey.model.QuestionType
 import learn.spring.survey.model.Survey
+import learn.spring.survey.model.SurveyType
 
 data class AuthResponse(val token: String)
 
 data class SurveyResponse(
     val id: Long,
+    val type: SurveyType,
     val title: String,
     val authorId: Long,
     val questions: List<QuestionResponse>
@@ -16,11 +18,13 @@ data class SurveyResponse(
         fun fromEntity(survey: Survey) =
             SurveyResponse(
                 id = survey.id,
+                type = survey.type,
                 title = survey.title,
                 authorId = survey.author?.id ?: 0L,
                 questions = survey.questions.map { question ->
-                    QuestionResponse(question.id, question.text, question.type, question.options?.map {
-                        OptionResponse(it.id, it.text)})
+                    QuestionResponse(question.id, question.text, question.type, question.options
+                        .takeIf { it.isNotEmpty() }
+                        ?.map { OptionResponse(it.id, it.text) })
                 }
             )
     }
@@ -55,7 +59,7 @@ data class AnswerResponse(
             AnswerResponse(
                 id = answer.id,
                 text = answer.text,
-                optionIds = answer.selectedOptions?.map { it.option?.id ?: 0L },
+                optionIds = answer.selectedOptions.takeIf { it.isNotEmpty() }?.map { it.option?.id ?: 0L},
                 questionId = answer.question?.id ?: 0L
             )
     }

@@ -59,7 +59,7 @@ data class OptionRequest(
     val text: String,
 
     val points: Int? = null,
-    val isCorrect: Boolean = false
+    val isCorrect: Boolean? = null
 )
 
 data class AnswerRequest(
