@@ -54,11 +54,11 @@ class SurveyServiceTest {
     private val singleChoiceQuestionId = 2L
     private val multipleChoiceQuestionId = 3L
 
-    private val option1IdFromSingle = 1L
-    private val option2IdFromSingle = 2L
-    private val option1IdFromMultiple = 3L
-    private val option2IdFromMultiple = 4L
-    private val option3IdFromMultiple = 5L
+    private val singleChoiceOption1Id = 1L
+    private val singleChoiceOption2Id = 2L
+    private val multipleChoiceOption1Id = 3L
+    private val multipleChoiceOption2Id = 4L
+    private val multipleChoiceOption3Id = 5L
 
     private fun createSurvey(type: SurveyType = SurveyType.STANDARD): Survey {
         return Survey(
@@ -71,15 +71,15 @@ class SurveyServiceTest {
                 Question(id = textQuestionId, text = "Text Q", type = QuestionType.TEXT, survey = this),
                 Question(id = singleChoiceQuestionId, text = "Single Choice", type = QuestionType.SINGLE_CHOICE, survey = this).apply {
                     options.addAll(listOf(
-                        AnswerOption(id = option1IdFromSingle, text = "Correct", isCorrect = true, points = 5),
-                        AnswerOption(id = option2IdFromSingle, text = "Wrong", isCorrect = false, points = 2)
+                        AnswerOption(id = singleChoiceOption1Id, text = "Correct", isCorrect = true, points = 5, question = this),
+                        AnswerOption(id = singleChoiceOption2Id, text = "Wrong", isCorrect = false, points = 2, question = this)
                     ))
                 },
                 Question(id = multipleChoiceQuestionId, text = "Multiple Choice", type = QuestionType.MULTIPLE_CHOICE, survey = this).apply {
                     options.addAll(listOf(
-                        AnswerOption(id = option1IdFromMultiple, text = "Option A", isCorrect = true, points = 2),
-                        AnswerOption(id = option2IdFromMultiple, text = "Option B", points = 3),
-                        AnswerOption(id = option3IdFromMultiple, text = "Option C", points = 1)
+                        AnswerOption(id = multipleChoiceOption1Id, text = "Option A", isCorrect = true, points = 2, question = this),
+                        AnswerOption(id = multipleChoiceOption2Id, text = "Option B", points = 3, question = this),
+                        AnswerOption(id = multipleChoiceOption3Id, text = "Option C", points = 1, question = this)
                     ))
                 }
             ))
@@ -322,14 +322,14 @@ class SurveyServiceTest {
         val survey = createSurvey(SurveyType.STANDARD)
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Free text"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple, option2IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(respondent.id, surveyId) } returns false
-        every { optionRepository.findById(option1IdFromSingle) } returns Optional.of(survey.questions[1].options[0])
-        every { optionRepository.findAllById(listOf(option1IdFromMultiple, option2IdFromMultiple)) } returns listOf(
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
+        every { optionRepository.findAllById(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id)) } returns listOf(
             survey.questions[2].options[0],
             survey.questions[2].options[1]
         )
@@ -345,10 +345,10 @@ class SurveyServiceTest {
         assertNull(result.answers[0].optionIds)
 
         assertNull(result.answers[1].text)
-        assertEquals(listOf(option1IdFromSingle), result.answers[1].optionIds)
+        assertEquals(listOf(singleChoiceOption1Id), result.answers[1].optionIds)
 
         assertNull(result.answers[2].text)
-        assertEquals(listOf(option1IdFromMultiple, option2IdFromMultiple), result.answers[2].optionIds)
+        assertEquals(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id), result.answers[2].optionIds)
     }
 
     @Test
@@ -356,13 +356,13 @@ class SurveyServiceTest {
         val survey = createSurvey()
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Text"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple, option2IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(option1IdFromSingle) } returns Optional.of(survey.questions[1].options[0])
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
         every { optionRepository.findAllById(any()) } returns survey.questions[2].options.take(2)
         every { answerRepository.saveAll(any<List<Answer>>()) } answers { firstArg() }
 
@@ -377,13 +377,13 @@ class SurveyServiceTest {
         val survey = createSurvey(SurveyType.QUIZ)
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Ignored for quiz"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple, option2IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(option1IdFromSingle) } returns Optional.of(survey.questions[1].options[0])
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
         every { optionRepository.findAllById(any()) } returns survey.questions[2].options.take(2)
         every { answerRepository.saveAll(any<List<Answer>>()) } answers { firstArg() }
 
@@ -401,13 +401,13 @@ class SurveyServiceTest {
         val survey = createSurvey(SurveyType.SCORED)
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("No points"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple, option3IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, multipleChoiceOption3Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(any()) } returns Optional.of(survey.questions[1].options[0])
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
         every { optionRepository.findAllById(any()) } returns listOf(
             survey.questions[2].options[0],
             survey.questions[2].options[2]
@@ -464,9 +464,9 @@ class SurveyServiceTest {
     fun `should throw for invalid answer type - text expected`() {
         val survey = createSurvey()
         val request = AnswerRequest(listOf(
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.SingleChoiceAnswer(option2IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption2Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
@@ -484,7 +484,7 @@ class SurveyServiceTest {
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Valid"),
             AnswerSubmission.TextAnswer("Invalid for choice"),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple))
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
@@ -501,13 +501,13 @@ class SurveyServiceTest {
         val survey = createSurvey()
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Valid"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromMultiple)
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.SingleChoiceAnswer(multipleChoiceOption1Id)
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(any()) } returns Optional.of(survey.questions[1].options[0])
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
 
         val exception = assertFailsWith<IllegalArgumentException> {
             surveyService.submitAnswers(surveyId, request, respondent)
@@ -521,12 +521,12 @@ class SurveyServiceTest {
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Text"),
             AnswerSubmission.SingleChoiceAnswer(999L),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple))
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(999L) } returns Optional.empty()
+        every { optionRepository.findByIdAndQuestionId(999L, singleChoiceQuestionId) } returns null
 
         val exception = assertFailsWith<IllegalArgumentException> {
             surveyService.submitAnswers(surveyId, request, respondent)
@@ -539,14 +539,14 @@ class SurveyServiceTest {
         val survey = createSurvey()
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Text"),
-            AnswerSubmission.SingleChoiceAnswer(option1IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromSingle, option2IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(singleChoiceOption1Id, multipleChoiceOption2Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(any()) } returns Optional.of(survey.questions[1].options[0])
-        every { optionRepository.findAllById(listOf(option1IdFromSingle, option2IdFromMultiple)) } returns listOf(
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
+        every { optionRepository.findAllById(listOf(singleChoiceOption1Id, multipleChoiceOption2Id)) } returns listOf(
             survey.questions[2].options[0]
         )
 
@@ -557,18 +557,62 @@ class SurveyServiceTest {
     }
 
     @Test
+    fun `should throw when selected single choice option does not belong to the question`() {
+        val survey = createSurvey()
+        val request = AnswerRequest(listOf(
+            AnswerSubmission.TextAnswer("Text"),
+            AnswerSubmission.SingleChoiceAnswer(999L),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id))
+        ))
+
+        every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
+        every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
+        every { optionRepository.findByIdAndQuestionId(999L, singleChoiceQuestionId) } returns null
+
+
+        val exception = assertFailsWith<IllegalArgumentException> {
+            surveyService.submitAnswers(surveyId, request, respondent)
+        }
+
+        assertEquals("Option not found", exception.message)
+    }
+
+    @Test
+    fun `should throw when some multiple choice options do not belong to the question`() {
+        val survey = createSurvey()
+        val invalidOption = AnswerOption(id = 999L, text = "Wrong", question = Question(id = 999L))
+        val request = AnswerRequest(listOf(
+            AnswerSubmission.TextAnswer("Text"),
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption1Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, invalidOption.id))
+        ))
+
+        every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
+        every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
+        every { optionRepository.findAllById(listOf(multipleChoiceOption1Id, invalidOption.id)) } returns listOf(survey.questions[2].options[0], invalidOption)
+
+        val ex = assertFailsWith<IllegalArgumentException> {
+            surveyService.submitAnswers(surveyId, request, respondent)
+        }
+
+        assertEquals("Some options not found", ex.message)
+    }
+
+
+    @Test
     fun `should handle multiple choice quiz question correctly`() {
         val survey = createSurvey(SurveyType.QUIZ)
 
         val request = AnswerRequest(listOf(
             AnswerSubmission.TextAnswer("Ignored"),
-            AnswerSubmission.SingleChoiceAnswer(option2IdFromSingle),
-            AnswerSubmission.MultipleChoiceAnswer(listOf(option1IdFromMultiple, option2IdFromMultiple))
+            AnswerSubmission.SingleChoiceAnswer(singleChoiceOption2Id),
+            AnswerSubmission.MultipleChoiceAnswer(listOf(multipleChoiceOption1Id, multipleChoiceOption2Id))
         ))
 
         every { surveyRepository.findById(surveyId) } returns Optional.of(survey)
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
-        every { optionRepository.findById(option2IdFromSingle) } returns Optional.of(survey.questions[1].options[1])
+        every { optionRepository.findByIdAndQuestionId(singleChoiceOption2Id, singleChoiceQuestionId) } returns survey.questions[1].options[1]
         every { optionRepository.findAllById(any()) } returns survey.questions[2].options.take(2)
         every { answerRepository.saveAll(any<List<Answer>>()) } answers { firstArg() }
 
@@ -578,4 +622,5 @@ class SurveyServiceTest {
         assertEquals(false, result.correctAnswers?.get(singleChoiceQuestionId))
         assertEquals(false, result.correctAnswers?.get(multipleChoiceQuestionId))
     }
+
 }
