@@ -86,7 +86,7 @@ class SurveyService(
                         throw IllegalArgumentException("Invalid answer type for single choice question")
                     }
                     val option = optionRepository.findByIdAndQuestionId(submission.optionId, question.id)
-                        ?: throw IllegalArgumentException("Option not found")
+                        ?: throw EntityNotFoundException("Option not found")
 
                     Answer(question = question, respondent = user).apply {
                         selectedOptions.add(SelectedOption(answer = this, option = option))
@@ -99,7 +99,7 @@ class SurveyService(
                     }
                     val options = optionRepository.findAllById(submission.optionIds)
                     if (options.size != submission.optionIds.size || options.any { it.question?.id != question.id }) {
-                        throw IllegalArgumentException("Some options not found")
+                        throw EntityNotFoundException("Some options not found")
                     }
 
                     Answer(question = question, respondent = user).apply {

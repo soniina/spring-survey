@@ -528,7 +528,7 @@ class SurveyServiceTest {
         every { answerRepository.existsByRespondentIdAndQuestionSurveyId(any(), any()) } returns false
         every { optionRepository.findByIdAndQuestionId(999L, singleChoiceQuestionId) } returns null
 
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertFailsWith<EntityNotFoundException> {
             surveyService.submitAnswers(surveyId, request, respondent)
         }
         assertEquals("Option not found", exception.message)
@@ -550,7 +550,7 @@ class SurveyServiceTest {
             survey.questions[2].options[0]
         )
 
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertFailsWith<EntityNotFoundException> {
             surveyService.submitAnswers(surveyId, request, respondent)
         }
         assertEquals("Some options not found", exception.message)
@@ -570,7 +570,7 @@ class SurveyServiceTest {
         every { optionRepository.findByIdAndQuestionId(999L, singleChoiceQuestionId) } returns null
 
 
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertFailsWith<EntityNotFoundException> {
             surveyService.submitAnswers(surveyId, request, respondent)
         }
 
@@ -592,7 +592,7 @@ class SurveyServiceTest {
         every { optionRepository.findByIdAndQuestionId(singleChoiceOption1Id, singleChoiceQuestionId) } returns survey.questions[1].options[0]
         every { optionRepository.findAllById(listOf(multipleChoiceOption1Id, invalidOption.id)) } returns listOf(survey.questions[2].options[0], invalidOption)
 
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<EntityNotFoundException> {
             surveyService.submitAnswers(surveyId, request, respondent)
         }
 
