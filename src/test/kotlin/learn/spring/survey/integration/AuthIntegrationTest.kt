@@ -23,6 +23,9 @@ class AuthIntegrationTest {
 
     @BeforeTest
     fun clean() {
+        jdbcTemplate.execute("DELETE FROM selected_options")
+        jdbcTemplate.execute("DELETE FROM answers")
+        jdbcTemplate.execute("DELETE FROM answer_options")
         jdbcTemplate.execute("DELETE FROM questions")
         jdbcTemplate.execute("DELETE FROM surveys")
         jdbcTemplate.execute("DELETE FROM users")

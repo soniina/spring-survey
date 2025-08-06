@@ -3,6 +3,7 @@ package learn.spring.survey.model
 import jakarta.persistence.*
 
 @Entity
+@Table(name = "selected_options")
 data class SelectedOption(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
