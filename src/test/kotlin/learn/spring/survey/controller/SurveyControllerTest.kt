@@ -106,6 +106,48 @@ class SurveyControllerTest {
         }
     }
 
+    @Test
+    fun `should return 400 when questions options is invalid`() {
+        val invalidRequest1 = SurveyRequest(
+            title = "Invalid Options 1",
+            type = SurveyType.STANDARD,
+            questions = listOf(
+                QuestionRequest(
+                    text = "Text question with options",
+                    type = QuestionType.TEXT,
+                    options = listOf(OptionRequest("Should not have options"))
+                )
+            )
+        )
+
+        mockMvc.post("/surveys") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(invalidRequest1)
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.errors['questions[0].validOptions']") { value("Options must be present for choice-based questions and absent for text questions") }
+        }
+
+        val invalidRequest2 = SurveyRequest(
+            title = "Invalid Options 2",
+            type = SurveyType.STANDARD,
+            questions = listOf(
+                QuestionRequest(
+                    text = "Choice without options",
+                    type = QuestionType.SINGLE_CHOICE
+                )
+            )
+        )
+
+        mockMvc.post("/surveys") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(invalidRequest2)
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.errors['questions[0].validOptions']") { value("Options must be present for choice-based questions and absent for text questions") }
+        }
+    }
+
 
     @Test
     fun `should return 400 when survey title already exists`() {
